@@ -1,4 +1,4 @@
- #!/usr/bin/env bash
+#!/usr/bin/env bash
 # prints clock
 i=0
 while [i<=12]; 
