@@ -1,27 +1,40 @@
 #!/usr/bin/env bash
-#script create thea file and stores it PID , displays messages depending on the signal it receives
-pgrep -f "$0" > /var/run/myscript.pid
-function catchSIGTERM(){
-	echo "I hate the kill command"
-	TEMPTWO="$(cat /var/run/myscript.pid)"
-	rm /var/run/myscript.pid
-	kill -9 "$TEMPTWO"
+#starts stop restart script depending on the argument passed
+
+function startup(){
+	bash ./manage_my_process &
+	echo "$!" > /var/run/my_process.pid
 }
 
-function catchSIGINT(){
-	echo "Y U no love me?!"
+function stopnow(){
+	[ -e "/var/run/my_process.pid" ] && pkill -f './manage_my_process' && rm /var/run/my_process.pid 
 }
 
-function catchSIGQUIT(){
-	TEMP="$(cat /var/run/myscript.pid)"
-	rm /var/run/myscript.pid
-	kill -9 "$TEMP"
+function restartnow(){
+	stopnow
+	startup
+	echo "manage_my_process restarted"
 }
-
-while true
-do
-	echo "To infinity and beyond"
-	trap catchSIGTERM SIGTERM
-	trap catchSIGINT  SIGINT
-	trap catchSIGQUIT SIGQUIT
-done
+if [ $# -eq 1 ] 
+then
+	OPTIONN="$1"
+	case $OPTIONN in
+	"start")
+		startup
+	echo "manage_my_process started"
+	;;
+	"stop")
+		#stopnow
+		stopnow
+	      	echo "manage_my_process stopped"
+	;;
+        "restart")
+	restartnow
+	;;
+	*)
+	echo "Usage: manage_my_process {start|stop|restart}"
+	;;
+       esac
+else 
+	echo "Usage: manage_my_process {start|stop|restart}"
+fi
